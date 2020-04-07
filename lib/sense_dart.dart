@@ -1,7 +1,7 @@
-import 'sense/SenseClient.pb.dart' as senseClient;
-import 'sense/SenseClient.pbenum.dart';
-import 'sense/SenseClient.pbgrpc.dart';
-import 'sense/SenseClient.pbjson.dart';
+library sense_dart;
+
+import './src/SenseClient.pb.dart';
+import './src/SenseClient.pbgrpc.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -82,7 +82,6 @@ Future<String> sense(filename, apiKey, fileFormat, taskInput) async {
   } catch (e) {
     throw new ArgumentError('Invalid API key');
   }
-  await channel.shutdown();
 }
 
 Stream<String> senseStream(inputData, apiKey, taskInput) async* {

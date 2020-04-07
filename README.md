@@ -14,6 +14,7 @@ To date, Sense API is the only publicly available API online for machine listeni
 ### 1. Add Dependency
 
 	**Add this to your package's pubspec.yaml file:**
+  
 	```yaml
 
 	dependencies:
