@@ -69,7 +69,7 @@ Future<String> sense(filename, apiKey, fileFormat, taskInput) async {
 
   Stream<Request> getFileChunks(filename) async* {
     num i = 0;
-    var audioByte = await new File(filename).readAsBytes();
+    var audioByte = await File(filename).readAsBytes();
     num st = 0;
     num end = 0;
     if (audioByte.length < CHUNK) {
@@ -109,7 +109,7 @@ Future<String> sense(filename, apiKey, fileFormat, taskInput) async {
 
 /// Analyzes audio stream and Returns it to JSON format stream.
 ///
-/// The inputData must be PCM_Float and the sample rate must be 22050.
+/// The inputData must be PCM_Float Audio Stream and the sample rate must be 22050.
 Stream<String> senseStream(inputData, apiKey, taskInput) async* {
   taskError(taskInput);
 
@@ -124,7 +124,7 @@ Stream<String> senseStream(inputData, apiKey, taskInput) async* {
 
   Stream<RequestStream> getStream(inputAudioStream) async* {
     await for (var audioData in inputAudioStream) {
-      ByteBuffer buffer = new Float32List.fromList(audioData).buffer;
+      ByteBuffer buffer = Float32List.fromList(audioData).buffer;
       List<int> intData = buffer.asUint8List();
       var streamRequest = RequestStream()
         ..data = intData
