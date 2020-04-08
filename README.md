@@ -13,14 +13,15 @@ To date, Sense API is the only publicly available API online for machine listeni
 
 ### 1. Add Dependency
 
-	**Add this to your package's pubspec.yaml file:**
-  
-	```yaml
+**Add this to your package's pubspec.yaml file:**
 
-	dependencies:
-		**sense_dart: ^0.0.1 *#latest version*
-	
-	```
+  
+  ```yaml
+
+  dependencies:
+    sense_dart: ^0.0.3+1
+
+  ```
 	
 ### 2. Install it
 
@@ -94,10 +95,13 @@ Future<String>  sense(filename, apiKey, fileFormat, taskInput) async {}
 Enter the format of the audio file you want to use into fileFormat in String.
 And enter the 'event' into taskInput.
 
-task  can take one of the following values :
-	'event'
-	'speech' #SUPPORTS INCOMING
-	'music' #SUPPORTS INCOMING
+task  can take one of the following values - 
+
+    'event'
+
+    'speech' #SUPPORTS INCOMING
+
+    'music' #SUPPORTS INCOMING
 
 
 **2. Analyze audio stream**
@@ -106,11 +110,13 @@ Stream<String>  senseStream(inputData, apiKey, taskInput) async* {}
 The inputData must be PCM_Float and the sample rate must be 22050.
 And enter the 'event' into taskInput.
 
-task  can take one of the following values :
-	'event'
-	'speech' #SUPPORTS INCOMING
-	'music' #SUPPORTS INCOMING
+task  can take one of the following values - 
 
+    'event'
+
+    'speech' #SUPPORTS INCOMING
+
+    'music' #SUPPORTS INCOMING
 
 **Result JSON Format**
 ```json

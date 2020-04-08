@@ -2,3 +2,10 @@
 .dart_tool/
 .packages
 pubspec.lock
+.idea/.gitignore
+.idea/libraries/
+.idea/misc.xml
+.idea/modules.xml
+.idea/sense_dart.iml
+.idea/vcs.xml
+doc/

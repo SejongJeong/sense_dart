@@ -1,4 +1,7 @@
 ﻿
+# 0.0.4
+Add Doc File and Minor Fix.
+
 # 0.0.3
 
 Add Example File.

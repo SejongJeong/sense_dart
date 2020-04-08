@@ -7,28 +7,51 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:grpc/grpc.dart';
 
+///@nodoc
 final String hostAddress = 'sense.cochlear.ai';
+
+/// List of allowed Task.
+///Task  can take one of the following values -
+///
+///    'event'
+///
+///    'speech' #SUPPORTS INCOMING
+///
+///    'music' #SUPPORTS INCOMING
+///
 final listOfTasks = ['event'];
+
+/// List of allowed File Format.
+///
+/// File Format can take one of the following values -
+///
+/// 'mp3', 'wav', 'ogg', 'flac', 'mp4'
 final listOfFileformats = ['mp3', 'wav', 'ogg', 'flac', 'mp4'];
 
+///@nodoc
 fileError(String fileName) {
   if (!File(fileName).existsSync()) {
-    throw new ArgumentError('File not found');
+    throw ArgumentError('File not found');
   }
 }
 
+///@nodoc
 formatError(String fileFormat) {
   if (!listOfFileformats.contains(fileFormat)) {
-    throw new ArgumentError('Invalid file format');
+    throw ArgumentError('Invalid file format');
   }
 }
 
+///@nodoc
 taskError(String taskInput) {
   if (!listOfTasks.contains(taskInput)) {
-    throw new ArgumentError(('Invalid task'));
+    throw ArgumentError(('Invalid task'));
   }
 }
 
+/// Analyzes audio file and Returns it to JSON format.
+///
+/// First, make sure the audio file format is one of the listOfFileformats.
 Future<String> sense(filename, apiKey, fileFormat, taskInput) async {
   // Exception Handling
   fileError(filename);
@@ -80,10 +103,13 @@ Future<String> sense(filename, apiKey, fileFormat, taskInput) async {
     var response = await stub.sense(chunksGenerator);
     return (response.outputs);
   } catch (e) {
-    throw new ArgumentError('Invalid API key');
+    throw ArgumentError('Invalid API key');
   }
 }
 
+/// Analyzes audio stream and Returns it to JSON format stream.
+///
+/// The inputData must be PCM_Float and the sample rate must be 22050.
 Stream<String> senseStream(inputData, apiKey, taskInput) async* {
   taskError(taskInput);
 
@@ -118,7 +144,7 @@ Stream<String> senseStream(inputData, apiKey, taskInput) async* {
       yield value.outputs;
     }
   } catch (e) {
-    throw new ArgumentError('Invalid API key');
+    throw ArgumentError('Invalid API key');
   }
 
   await channel.shutdown();
