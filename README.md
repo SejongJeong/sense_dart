@@ -1,6 +1,6 @@
 ﻿# sense_dart
 
-API Library for Dart with audio analysis and recognition solutions from Cochlear.ai
+API Library for Dart with audio analysis and recognition solutions from [Cochlear.ai](https://cochlear.ai)
 
 ## Overview
 
@@ -19,7 +19,7 @@ To date, Sense API is the only publicly available API online for machine listeni
   ```yaml
 
   dependencies:
-    sense_dart: ^0.1
+    sense_dart: ^0.1.0
 
   ```
 	
@@ -90,7 +90,7 @@ Audio that we analyze needs to be at least 1 second long.
 
 Audio file format must be one of mp3, flac, wav, ogg, mp4.
 
-**Future<String>  sense(filename, apiKey, fileFormat, taskInput) async {}**
+****Future<String>  sense(filename, apiKey, fileFormat, taskInput) async {}****
 
 Enter the format of the audio file you want to use into fileFormat in String.
 
@@ -107,7 +107,7 @@ task  can take one of the following values -
 
 **2. Analyze audio stream**
 
-**Stream<String>  senseStream(inputData, apiKey, taskInput) async* {}**
+****Stream<String>  senseStream(inputData, apiKey, taskInput) async* {}****
 
 The inputData must be PCM_Float and the sample rate must be 22050.
 
