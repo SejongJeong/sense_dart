@@ -20,11 +20,11 @@ class Event {
         endTime = json['end_time'];
 
   Map<String, dynamic> toJson() => {
-    'tag' : tag,
-    'probability' : probability,
-    'start_time' : startTime,
-    'end_time' : endTime,
-  };
+        'tag': tag,
+        'probability': probability,
+        'start_time': startTime,
+        'end_time': endTime,
+      };
 
   @override
   String toString() {
@@ -46,10 +46,11 @@ class Result {
     this.rawJson = json.decode(raw);
     this.result = this.rawJson["result"];
     this._service = this.result["task"];
-    this._event = new List<Event> ();
-    List<dynamic> tempEvent = result["frames"] != null ? List.from(result["frames"]) : null;
+    this._event = List<Event>();
+    List<dynamic> tempEvent =
+        result["frames"] != null ? List.from(result["frames"]) : null;
     for (var value in tempEvent) {
-      value = new Event.fromJson(value);
+      value = Event.fromJson(value);
       this._event.add(value);
     }
   }
@@ -58,13 +59,13 @@ class Result {
     this.rawJson = null;
     this.result = null;
     this._service = null;
-    this._event = new List<Event>();
+    this._event = List<Event>();
   }
 
-  Map<String, dynamic> toJson () => {
-    "events" : allEvents(),
-    "service": service(),
-  };
+  Map<String, dynamic> toJson() => {
+        "events": allEvents(),
+        "service": service(),
+      };
 
   String toString() {
     return _event.toString();
@@ -73,17 +74,15 @@ class Result {
   bool filter(Event event) {
     return useDefaultFilter(event);
     // Implement Your Filter Code
-    if (event.tag == '') {
+    /*if (event.tag == '') {
       return true;
     }
-    else return false;
+    else return false;*/
   }
-
 
   bool useDefaultFilter(Event event) {
     return defaultEventFilter(event);
   }
-
 
   String service() {
     return this._service;
@@ -101,7 +100,7 @@ class Result {
 
   List detectedTags() {
     List tags = new List();
-    for(Event frame in detectedEvents()) {
+    for (Event frame in detectedEvents()) {
       tags.add(frame.tag);
     }
     return tags;
@@ -113,11 +112,10 @@ class Result {
       List timing;
       if (summary[event.tag] == null) {
         timing = [];
-      }
-      else {
+      } else {
         timing = summary[event.tag];
       }
-      timing.add([event.startTime,event.endTime]);
+      timing.add([event.startTime, event.endTime]);
       summary[event.tag] = timing;
     }
     summary.updateAll((key, value) => _mergeOverlappingEvents(value));
@@ -129,7 +127,8 @@ class Result {
     var newResult = newRawjson['result'];
     this._service = newResult['task'];
     List<Event> newEvent = new List<Event>();
-    List<dynamic> tempEvent = newResult["frames"] != null ? List.from(newResult["frames"]) : null;
+    List<dynamic> tempEvent =
+        newResult["frames"] != null ? List.from(newResult["frames"]) : null;
     for (var value in tempEvent) {
       value = new Event.fromJson(value);
       newEvent.add(value);
@@ -143,10 +142,10 @@ class Result {
   }
 
   List _mergeOverlappingEvents(List times) {
-    if(times.length == 0) {
+    if (times.length == 0) {
       return [];
     }
-    times.sort((a,b) => a[0].compareTo(b[0]));
+    times.sort((a, b) => a[0].compareTo(b[0]));
     List merged = [times[0]];
     for (var time in times.getRange(1, times.length)) {
       var last = merged.last;
@@ -160,5 +159,4 @@ class Result {
     }
     return merged;
   }
-
 }

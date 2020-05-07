@@ -7,7 +7,6 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:grpc/grpc.dart';
 
-
 /// List of allowed File Format.
 ///
 /// File Format can take one of the following values -
@@ -76,18 +75,16 @@ class file {
   ///
   /// First, make sure the audio file format is one of the listOfFileformats.
   Future<Result> inference() async {
-    if(this._inferenced) {
+    if (this._inferenced) {
       throw StateError("file was already inferenced");
     }
     this._inferenced = true;
     final List<int> selfSignedRoot = utf8.encode(SERVER_CA_CERTIFICATE);
-    final channelCredentials = new ChannelCredentials.secure(certificates: selfSignedRoot);
-    final channelOptions = new ChannelOptions(credentials: channelCredentials);
-    final channel = ClientChannel(
-        this.host,
-        port: PORT,
-        options: channelOptions
-    );
+    final channelCredentials =
+        ChannelCredentials.secure(certificates: selfSignedRoot);
+    final channelOptions = ChannelOptions(credentials: channelCredentials);
+    final channel =
+        ClientChannel(this.host, port: PORT, options: channelOptions);
     final stub = SenseClient(channel);
     try {
       var requests = _grpcRequests(this._reader);

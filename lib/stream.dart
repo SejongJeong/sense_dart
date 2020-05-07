@@ -8,12 +8,7 @@ import 'package:grpc/grpc.dart';
 
 const int MIN_RECOMMANDED_SAMPLING_RATE = 22050;
 
-const Map STREAM_FORMAT = {
-  "float32": 4,
-  "float64": 8,
-  "int32": 4,
-  "int64": 8
-};
+const Map STREAM_FORMAT = {"float32": 4, "float64": 8, "int32": 4, "int64": 8};
 
 /// Analyzes audio stream and Returns it to JSON format stream.
 ///
@@ -25,29 +20,30 @@ class stream {
   final String _dataType;
   final String host;
   final int _maxEventsHistorySize;
-  List<int> _buffer;
+  //List<int> _buffer;
   ClientChannel channel;
   bool _inferenced;
 
   stream(this._apiKey, this._streamer, this._samplingRate, this._dataType,
-  this.host, this._maxEventsHistorySize) {
+      this.host, this._maxEventsHistorySize) {
     this._inferenced = false;
     this.channel = null;
-    this._buffer = new List<int>();
+    //this._buffer = List<int>();
   }
 
   Stream inference() async* {
     Stream<String> resultStream = _sendToGrpc();
-    Result result = new Result.empty();
-    await for(var value in resultStream) {
+    Result result = Result.empty();
+    await for (var value in resultStream) {
       result.appendNewResult(value, this._maxEventsHistorySize);
       yield result;
     }
   }
-  
+
   void close() async {
     if (!this._inferenced) {
-      throw UnsupportedError("canot close stream if this one was not inferenced");
+      throw UnsupportedError(
+          "canot close stream if this one was not inferenced");
     }
     if (this.channel == null) {
       throw ArgumentError("stream was already closed");
@@ -76,8 +72,8 @@ class stream {
     this._inferenced = true;
     final List<int> selfSignedRoot = utf8.encode(SERVER_CA_CERTIFICATE);
     final channelCredentials =
-        new ChannelCredentials.secure(certificates: selfSignedRoot);
-    final channelOptions = new ChannelOptions(credentials: channelCredentials);
+        ChannelCredentials.secure(certificates: selfSignedRoot);
+    final channelOptions = ChannelOptions(credentials: channelCredentials);
     this.channel =
         ClientChannel(this.host, port: PORT, options: channelOptions);
     final stub = SenseClient(this.channel);
@@ -134,7 +130,8 @@ class streamBuilder {
   }
 
   stream build() {
-    final stream streamBuild = stream(_apiKey, _streamer, _samplingRate, _dataType, _host, _maxEventsHistorySize);
+    final stream streamBuild = stream(_apiKey, _streamer, _samplingRate,
+        _dataType, _host, _maxEventsHistorySize);
     return streamBuild;
   }
 }
