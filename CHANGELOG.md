@@ -1,4 +1,7 @@
 ﻿
+# 0.2.0
+Update corresponding to Sense Client v1.0.0
+
 # 0.1.0
 Add Doc Example.
 

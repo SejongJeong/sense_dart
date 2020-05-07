@@ -1,53 +1,56 @@
 import 'dart:io';
-import 'dart:convert';
-import 'sample_data.dart';
-import 'dart:collection';
 import 'package:sense_dart/sense_dart.dart';
 
+
 void main() async {
-  final APIKey = "";
-
-  // Streamlize sample_data.dart
-  var streamData = new Queue<List<double>>();
-
-  void audioDataBuffering(int second) async {
-    for (int i = 0; i < second; i++) {
-      streamData.add(sample_data);
-    }
-  }
-
-  Stream<List<double>> audioDataGenerator() async* {
-    while (streamData.length > 0) {
-      yield streamData.removeFirst();
-    }
-  }
+  final APIKey = "< Enter Your API Key >";
 
   // Check API Connection
-  final result = await InternetAddress.lookup(hostAddress);
+  final result = await InternetAddress.lookup("sense.cochlear.ai");
   print(result.isNotEmpty);
   print(result[0].rawAddress.isNotEmpty);
 
-  // Test File Analysis
-  final res =
-      await sense("example/test_samples/cough.wav", APIKey, "wav", "event");
-  final resultJSON = json.decode(res);
 
-  // Check the respose meesage
-  print(resultJSON["status"]["code"]);
-  final summary = resultJSON['result']['summary'];
-  print(summary[1]['tag']);
+  // ------------------ Test File Analysis ------------------------
+  var testFile = (fileBuilder()
+  ..withApiKey(APIKey)
+  ..withReader("example/test_samples/temp.wav")
+  ..withFormat("wav")
+  ).build();
 
-  // Test Stream Analysis
+  final res = await testFile.inference();
+  final resultJSON = res;
 
-  audioDataBuffering(100);
+  print(resultJSON.runtimeType);
 
-  Stream<String> resStream = senseStream(audioDataGenerator(), APIKey, "event");
-  resStream.listen((res) {
-    final resultJSON = json.decode(res);
-    // Check the respose meesage
-    // print(resultJSON["status"]["code"]);
-    //final frames = resultJSON['result']['frames'];
-    //print(frames[0]['tag']);
-    print(resultJSON);
+ //  Check the respose meesage
+  print(resultJSON.service());
+  print(resultJSON.allEvents());
+//  print(resultJSON.detectedEventsTiming());
+//  print(resultJSON.detectedTags());
+// for (var event in resultJSON.detectedEvents()) {
+//   print(event);
+// }
+
+  // --------------------- Test Stream Analysis -------------------
+// sample float32 Mono 22050 audio raw file
+  var tempStreamData = File('example/test_samples/a.raw').openRead();
+  var testStream = (streamBuilder()
+  ..withApiKey(APIKey)
+  ..withStreamer(tempStreamData)
+  ..withSamplingRate(22050)
+  ..withDataType("float32")
+  ).build();
+
+  Stream resStream = testStream.inference();
+
+  // return final Result Instance
+//  Result temp = await resStream.last;
+//  print (temp.detectedEvents());
+
+  // return every Result Instance
+  print("Stream Inference : \n");
+  resStream.listen((event) {
+    print(event);
   });
 }

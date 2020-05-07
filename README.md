@@ -19,7 +19,7 @@ To date, Sense API is the only publicly available API online for machine listeni
   ```yaml
 
   dependencies:
-    sense_dart: ^0.1.0
+    sense_dart: ^0.2.0
 
   ```
 	
@@ -33,7 +33,6 @@ with pub:
 
 $ pub get
 
-
 ```
 
 with Flutter:
@@ -41,7 +40,6 @@ with Flutter:
 ```shell
 
 $ flutter pub get
-
 
 ```
 
@@ -59,15 +57,9 @@ import 'package:sense_dart/sense_dart.dart';
 
 ### 4. Get API Key
 
-Go to https://cochlear.ai/beta-subscription/
+Go to https://dashboard.cochlear.ai/
 
-Then enter and submit an email to receive the key and get a Beta Key.
-
-During the beta-version testing period, there is a daily quota on the number of files/length of streaming that you can use.
-Daily Quota - 
-	 700 calls per method (audio file) / 10 minutes per method (audio stream)
-
-Daily quotas are refreshed at the end of a 24-hour window (GMT+0).
+Then sign up and get 10 dollars free of charge.
 
 
 ## Usage
@@ -76,119 +68,173 @@ Daily quotas are refreshed at the end of a 24-hour window (GMT+0).
 ```dart
 import 'package:sense_dart/sense_dart.dart';
 
-final  apiKey  =  "Copy Your Cochlear API Beta Key Received by Email";
+final  apiKey  =  "Copy Your Cochlear API Key Received by homepage";
 ```
-**Sampling rate : 22050Hz**
-To have the best result, we recommend sending us an audio input with a sampling rate greater than 22050Hz.
-If your audio file is sampled below this value, don’t resample it by yourself: our system supports it as well.
-
-**Minimum length : 1 second**
-Audio that we analyze needs to be at least 1 second long.
-
 
  **1. Analyze audio files**
+ 
+file represents a class that can inference audio coming from an audio file.
 
-Audio file format must be one of mp3, flac, wav, ogg, mp4.
+An audio file is any source of audio data which duration is known at runtime. Because duration is known at runtime, server will wait for the whole file to be received before to start inferencing. All inferenced data will be received in one payload.
 
-****Future<String>  sense(filename, apiKey, fileFormat, taskInput) async {}****
+A file can be for instance, a mp3 file stored locally, a wav file accessible from an url etc...
 
-Enter the format of the audio file you want to use into fileFormat in String.
+So far wav, flac, mp3, ogg, mp4 are supported.
 
-And enter the 'event' into taskInput.
+If you are using another file encoding format, let us know at support@cochlear.ai so that we can priorize it in our internal roadmap.
 
-task  can take one of the following values - 
+File implements the following interface :
+```dart
+class file {
+  Future<Result> inference() async => Result;
+}
+```
+When calling inference, a GRPC connection will be established with the backend, audio data of the File will be sent and a Result instance will be returned in case of success (described bellow).
 
-    'event'
+Note that network is not reached until inference method is called.
 
-    'speech' #SUPPORTS INCOMING
+Note that inference can be called only once per file instance.
 
-    'music' #SUPPORTS INCOMING
+To create a file instance, you need to use a fileBuilder instance. fileBuilder is following the builder pattern and calling its build method will create a file instance.
+
+fileBuider implements the following interface :
+```dart
+class fileBuilder {
+  //api key of cochlear.ai projects available at https://dashboard.cochlear.ai
+  void withApiKey(String apiKey) => fileBuilder;
+
+  //data reader to the file data
+  void withReader(String reader) => fileBuilder;
+
+  //format of the audio file : can be mp3, flac, wav, ogg, etc...
+  void withFormat(String format) => fileBuilder;
+
+  //host address that performs grpc communication.
+  //If this method is not used, default host is used.
+  void withHost(String host) => fileBuilder;
 
 
+  //creates a File instance
+  file build();
+}
+
+```
+ 
 **2. Analyze audio stream**
 
-****Stream<String>  senseStream(inputData, apiKey, taskInput) async* {}****
+stream represents a class that can inference audio coming from an audio stream.
 
-The inputData must be PCM_Float and the sample rate must be 22050.
+An audio stream is any source of data which duration is not known at runtime. Because duration is not known, server will inference audio as it comes. One second of audio will be required before the first result to be returned. After that, one result will be given every 0.5 second of audio.
 
-And enter the 'event' into taskInput.
+A stream can be for instance, the audio data comming from a microphone, audio data comming from a web radio etc...
 
-task  can take one of the following values - 
+Streams can be stopped at any moment while inferencing.
 
-    'event'
+For now, the only format that is supported for streaming is a raw data stream (PCM float32 stream). Raw data being sent has to be a mono channel audio stream.
 
-    'speech' #SUPPORTS INCOMING
+ Its sampling rate has to be given to describe the raw audio data.
 
-    'music' #SUPPORTS INCOMING
+For best performance, we recommend using a sampling rate of 22050Hz and data represented as float32.
 
-**Result JSON Format**
-```json
-{
-  "status": {
-    "code": 200,
-    "description": "OK"
-  },
-  "result": {
-    "task": "event",
-    "frames": [
-      {
-        "tag": "Laughter",
-        "probability": 0.9042,
-        "start_time": 0,
-        "end_time": 1
-      },
-      {
-        "tag": "Baby_cry",
-        "probability": 0.8802,
-        "start_time": 0.5,
-        "end_time": 1.5
-      },
-      {
-        "tag": "Laughter",
-        "probability": 0.7,
-        "start_time": 1,
-        "end_time": 2
-      },
-      {
-        "tag": "Baby_cry",
-        "probability": 0.8978,
-        "start_time": 1.5,
-        "end_time": 2.5
-      },
-      {
-        "tag": "Baby_cry",
-        "probability": 0.695,
-        "start_time": 2,
-        "end_time": 3
-      }
-    ],
-    "summary": [
-      {
-        "tag": "Laughter",
-        "probability": 0.9042,
-        "start_time": 0,
-        "end_time": 1
-      },
-      {
-        "tag": "Baby_cry",
-        "probability": 0.8802,
-        "start_time": 0.5,
-        "end_time": 1.5
-      },
-      {
-        "tag": "Laughter",
-        "probability": 0.7,
-        "start_time": 1,
-        "end_time": 2
-      },
-      {
-        "tag": "Baby_cry",
-        "probability": 0.7964,
-        "start_time": 1.5,
-        "end_time": 3
-      }
-    ]
-  }
+Multiple results will be returned by calling a callback function.
+
+If you are using another stream encoding format that is not supported, let us know at support@cochlear.ai so that we can priorize it in our internal roadmap.
+
+Stream implements the following interface :
+```dart
+class stream {
+  Stream inference() async* => Result;
+}
+```
+When calling inference, a GRPC connection will be established with the backend, audio data of the stream will be sent every 0.5s. Once result is returned by the server, the callback function is called.
+
+Note that network is not reached until inference method is called.
+
+Note that inference can be called only once per stream instance.
+
+To create a stream instance, you need to use a streamBuilder instance. streamBuilder is following the builder pattern and calling its build method will create a stream instance.
+
+streamBuilder implements the following interface :
+```dart
+class streamBuilder {
+  //api key of cochlear.ai projects available at dashboard.cochlear.ai
+  void withApiKey(String apiKey) => streamBuilder;
+
+  //data of the pcm stream
+  void withStreamer(Stream<List<num>> streamer) => streamBuilder;
+
+  //max number of events from previous inference to keep in memory
+  void withMaxEventsHistorySize(int n) => streamBuilder;
+
+  //sampling rate of the pcm stream
+  void withSamplingRate(int samplingRate) => streamBuilder;
+
+  //type of the pcm float32 stream
+  void withDataType(String dataType) => streamBuilder;
+
+  //host address that performs grpc communication.
+  //If this method is not used, default host is used.
+  void withHost(String host) => streamBuilder;
+
+
+  //creates a stream instance
+  stream build();
+}
+```
+Note that withApiKey, withDataType, withSamplingRate and withStreamer method needs to be called before calling the build method, otherwise an error will be thrown.
+
+**3. Result**
+
+Result is a class that is returned by both file and stream when calling inference method.
+
+Multiple results will be returned by a stream by calling a callback function. For a file only one result will be returned.
+
+Result implements the following interface :
+```dart
+class Result {
+  //returns all events
+  List<Event> allEvents();
+
+  //returns all events that match the "filter function" defined below
+  List<Event> detectedEvents();
+
+  //group events that match the "filter function" and shows segments of time of when events were detected
+  Map detectedEventsTiming();
+
+  //return only the "tag" of the event that match the "filter" function
+  List detectedTags();
+
+  //returns the service name : "human-interaction" or "emergency" for instance
+  String service();
+
+  //returns a raw json object containing service name and an array of events
+  Map<String, dynamic> toJson ();
+
+  //use a filter function : that function takes an event as input and return a boolean. An event will be "detected" if the filter function returns true for that event
+  //the default filter is to consider all events as detected. So by default, allEvents() and detectedEvents() will return the same result
+  bool useDefaultFilter(Event event);
+  //where filter is a function that takes an event in input and returns a boolean
+  bool filter(Event event);
 }
 ```
 
+Note that if you are inferencing a stream, multiple results will be returned. By default, calling allEvents() will only returned the newly inferenced result. It's possible to keep track of previous events of the stream. To do so, call the withMaxEventsHistorySize method on the streamBuilder class. Its default value is 0, and increasing it will allow to "remember" previous events.
+
+**4. Event**
+
+An event contains the following data :
+```dart
+class Event {
+  //name of the detected event
+  var tag;
+
+  //probability for the event to happen. Its values is between 0 and 1
+  var probability;
+
+  //start timestamp of the detected event since the beginning of the inference
+  var startTime;
+
+  //end timestamp of the detected event since the beginning of the inference
+  var endTime;
+}
+```
