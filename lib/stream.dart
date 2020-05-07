@@ -86,7 +86,7 @@ class stream {
         yield value.outputs;
       }
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 }

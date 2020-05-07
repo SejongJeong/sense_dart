@@ -19,7 +19,7 @@ To date, Sense API is the only publicly available API online for machine listeni
   ```yaml
 
   dependencies:
-    sense_dart: ^0.2.1
+    sense_dart: ^0.2.3
 
   ```
 	

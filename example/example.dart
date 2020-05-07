@@ -3,7 +3,7 @@ import 'package:sense_dart/sense_dart.dart';
 
 
 void main() async {
-  final APIKey = "< Enter Your API Key >";
+  final APIKey = "< Enter API Key >";
 
   // Check API Connection
   final result = await InternetAddress.lookup("sense.cochlear.ai");

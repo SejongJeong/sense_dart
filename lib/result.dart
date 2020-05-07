@@ -99,7 +99,7 @@ class Result {
   }
 
   List detectedTags() {
-    List tags = new List();
+    List tags = List();
     for (Event frame in detectedEvents()) {
       tags.add(frame.tag);
     }
@@ -107,7 +107,7 @@ class Result {
   }
 
   Map detectedEventsTiming() {
-    Map summary = new Map();
+    Map summary = Map();
     for (Event event in detectedEvents()) {
       List timing;
       if (summary[event.tag] == null) {
@@ -126,11 +126,11 @@ class Result {
     var newRawjson = json.decode(raw);
     var newResult = newRawjson['result'];
     this._service = newResult['task'];
-    List<Event> newEvent = new List<Event>();
+    List<Event> newEvent = List<Event>();
     List<dynamic> tempEvent =
         newResult["frames"] != null ? List.from(newResult["frames"]) : null;
     for (var value in tempEvent) {
-      value = new Event.fromJson(value);
+      value = Event.fromJson(value);
       newEvent.add(value);
     }
     if (maxStoredEvents < _event.length) {
@@ -142,7 +142,7 @@ class Result {
   }
 
   List _mergeOverlappingEvents(List times) {
-    if (times.length == 0) {
+    if (times.isEmpty) {
       return [];
     }
     times.sort((a, b) => a[0].compareTo(b[0]));

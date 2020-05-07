@@ -1,5 +1,5 @@
 name: sense_dart
-version: 0.2.1
+version: 0.2.3
 description: API Library for Dart with audio analysis and recognition solutions from Cochlear.ai
 homepage: https://github.com/cochlearai/sense-dart
 
