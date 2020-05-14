@@ -1,4 +1,4 @@
-﻿# sense_dart
+﻿# Sense Dart
 
 API Library for Dart with audio analysis and recognition solutions from [Cochlear.ai](https://cochlear.ai)
 

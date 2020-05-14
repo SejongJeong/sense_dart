@@ -31,7 +31,7 @@ class stream {
     //this._buffer = List<int>();
   }
 
-  Stream inference() async* {
+  Stream<Result> inference() async* {
     Stream<String> resultStream = _sendToGrpc();
     Result result = Result.empty();
     await for (var value in resultStream) {

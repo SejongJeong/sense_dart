@@ -8,7 +8,7 @@ class Event {
 
   Event(json) {
     this.tag = json['tag'];
-    this.probability = json['probablility'];
+    this.probability = json['probability'];
     this.startTime = json['start_time'];
     this.endTime = json['end_time'];
   }
@@ -40,18 +40,18 @@ class Result {
   var rawJson;
   var result;
   var _service;
-  List<Event> _event;
+  List<Event> _events;
 
   Result(String raw) {
     this.rawJson = json.decode(raw);
     this.result = this.rawJson["result"];
     this._service = this.result["task"];
-    this._event = List<Event>();
+    this._events = List<Event>();
     List<dynamic> tempEvent =
         result["frames"] != null ? List.from(result["frames"]) : null;
     for (var value in tempEvent) {
       value = Event.fromJson(value);
-      this._event.add(value);
+      this._events.add(value);
     }
   }
 
@@ -59,7 +59,7 @@ class Result {
     this.rawJson = null;
     this.result = null;
     this._service = null;
-    this._event = List<Event>();
+    this._events = List<Event>();
   }
 
   Map<String, dynamic> toJson() => {
@@ -67,8 +67,10 @@ class Result {
         "service": service(),
       };
 
+
+
   String toString() {
-    return _event.toString();
+    return _events.toString();
   }
 
   bool filter(Event event) {
@@ -89,7 +91,7 @@ class Result {
   }
 
   List<Event> allEvents() {
-    return this._event;
+    return this._events;
   }
 
   List<Event> detectedEvents() {
@@ -133,12 +135,12 @@ class Result {
       value = Event.fromJson(value);
       newEvent.add(value);
     }
-    if (maxStoredEvents < _event.length) {
-      this._event =
-          this._event.sublist(_event.length - maxStoredEvents, _event.length);
+    if (maxStoredEvents < _events.length) {
+      this._events =
+          this._events.sublist(_events.length - maxStoredEvents, _events.length);
     }
-    this._event += newEvent;
-    return this._event;
+    this._events += newEvent;
+    return this._events;
   }
 
   List _mergeOverlappingEvents(List times) {
