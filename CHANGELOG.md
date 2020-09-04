@@ -1,4 +1,7 @@
-﻿
+﻿# 1.1.0
+
+Add SmartFiltering capability 
+
 # 0.2.1 ~ 0.2.3
 Delete unnecessary code.
 

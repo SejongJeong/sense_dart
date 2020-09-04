@@ -19,7 +19,7 @@ To date, Sense API is the only publicly available API online for machine listeni
   ```yaml
 
   dependencies:
-    sense_dart: ^0.2.3
+    cochl_sense: ^1.1.0
 
   ```
 	
@@ -51,7 +51,7 @@ Now in your Dart code, you can use:
 
 ```dart
 
-import 'package:sense_dart/sense_dart.dart';
+import 'package:cochl_sense/cochl_sense.dart';
 
 ```
 
@@ -66,9 +66,9 @@ Then sign up and get 10 dollars free of charge.
 
 **Import the library.**
 ```dart
-import 'package:sense_dart/sense_dart.dart';
+import 'package:cochl_sense/cochl_sense.dart';
 
-final  apiKey  =  "Copy Your Cochlear API Key Received by homepage";
+final  apiKey  =  "< Get api key from https://dashboard.cochlear.ai >";
 ```
 
  **1. Analyze audio files**
@@ -112,6 +112,9 @@ class fileBuilder {
   //host address that performs grpc communication.
   //If this method is not used, default host is used.
   void withHost(String host) => fileBuilder;
+
+  //activate or not smart filtering (default false)
+  void withSmartFiltering(Booolean smartFiltering) => fileBuilder;
 
 
   //creates a File instance
@@ -176,6 +179,8 @@ class streamBuilder {
   //If this method is not used, default host is used.
   void withHost(String host) => streamBuilder;
 
+  //activate or not smart filtering (default false)
+  void withSmartFiltering(Booolean smartFiltering) => fileBuilder;
 
   //creates a stream instance
   stream build();

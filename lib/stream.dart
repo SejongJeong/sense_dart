@@ -1,8 +1,10 @@
-import './src/SenseClient.pb.dart';
-import './src/SenseClient.pbgrpc.dart';
+import 'package:fixnum/fixnum.dart';
+import './metadata.dart';
+import './proto/SenseClient.pb.dart';
+import './proto/SenseClient.pbgrpc.dart';
 import './constant.dart';
 import './result.dart';
-import 'dart:async';
+import 'dart:async' as async;
 import 'dart:convert';
 import 'package:grpc/grpc.dart';
 
@@ -13,29 +15,33 @@ const Map STREAM_FORMAT = {"float32": 4, "float64": 8, "int32": 4, "int64": 8};
 /// Analyzes audio stream and Returns it to JSON format stream.
 ///
 /// The inputData must be PCM_Float Audio Stream and the sample rate must be 22050.
-class stream {
-  final String _apiKey;
-  final Stream<List<num>> _streamer;
-  final int _samplingRate;
-  final String _dataType;
-  final String host;
+class Stream {
+  final Metadata _metadata;
+  final String _host;
   final int _maxEventsHistorySize;
-  //List<int> _buffer;
-  ClientChannel channel;
+  final async.Stream<List<num>> _streamer;
+
+  ClientChannel _channel;
   bool _inferenced;
 
-  stream(this._apiKey, this._streamer, this._samplingRate, this._dataType,
-      this.host, this._maxEventsHistorySize) {
+  Stream._(
+      this._streamer, this._host, this._metadata, this._maxEventsHistorySize) {
     this._inferenced = false;
-    this.channel = null;
-    //this._buffer = List<int>();
+    this._channel = null;
   }
 
-  Stream<Result> inference() async* {
-    Stream<String> resultStream = _sendToGrpc();
-    Result result = Result.empty();
-    await for (var value in resultStream) {
-      result.appendNewResult(value, this._maxEventsHistorySize);
+  async.Stream<Result> inference() async* {
+    async.Stream<CochlSense> stream = _sendToGrpc();
+
+    Result result;
+
+    await for (var events in stream) {
+      if (result == null) {
+        result = Result(events);
+      } else {
+        result.appendNewResult(events, this._maxEventsHistorySize);
+      }
+
       yield result;
     }
   }
@@ -45,27 +51,26 @@ class stream {
       throw UnsupportedError(
           "canot close stream if this one was not inferenced");
     }
-    if (this.channel == null) {
+    if (this._channel == null) {
       throw ArgumentError("stream was already closed");
     }
-    await this.channel.shutdown();
-    this.channel = null;
+    await this._channel.shutdown();
+    this._channel = null;
   }
 
-  Stream<RequestStream> _grpcRequests() async* {
+  async.Stream<Audio> _grpcRequests() async* {
+    num offset = 0;
     await for (var audioData in _streamer) {
-      var streamRequest = RequestStream()
+      var streamRequest = Audio()
         ..data = audioData
-        ..apikey = this._apiKey
-        ..sr = this._samplingRate
-        ..dtype = _dataType
-        ..apiVersion = API_VERSION
-        ..userAgent = USER_AGENT;
+        ..segmentOffset = Int64(offset)
+        ..segmentStartTime = 0;
+      offset += audioData.length;
       yield streamRequest;
     }
   }
 
-  Stream<String> _sendToGrpc() async* {
+  async.Stream<CochlSense> _sendToGrpc() async* {
     if (this._inferenced) {
       throw StateError("stream was already inferenced");
     }
@@ -74,64 +79,80 @@ class stream {
     final channelCredentials =
         ChannelCredentials.secure(certificates: selfSignedRoot);
     final channelOptions = ChannelOptions(credentials: channelCredentials);
-    this.channel =
-        ClientChannel(this.host, port: PORT, options: channelOptions);
-    final stub = SenseClient(this.channel);
 
-    try {
-      var requests = _grpcRequests();
-      var response = stub.sense_stream(requests);
+    String host = this._host.split(":")[0];
+    int port = int.parse(this._host.split(":")[1]);
 
-      await for (var value in response) {
-        yield value.outputs;
-      }
-    } catch (e) {
-      rethrow;
+    this._channel = ClientChannel(host, port: port, options: channelOptions);
+    final stub = CochlClient(this._channel,
+        options: CallOptions(metadata: _metadata.toGRPCMetadata()));
+
+    var requests = _grpcRequests();
+    var response = stub.sensestream(requests);
+
+    await for (var value in response) {
+      yield value;
     }
+
+    close();
   }
 }
 
-class streamBuilder {
-  String _apiKey;
-  Stream<List<num>> _streamer;
-  int _samplingRate;
-  String _dataType;
-  String _host = HOST;
-  int _maxEventsHistorySize = 0;
+class StreamBuilder {
+  String apiKey;
+  async.Stream<List<num>> streamer;
+  int samplingRate;
+  String dataType;
+  String host = HOST;
+  int maxEventsHistorySize = 0;
+  bool smartFiltering = false;
 
-  void withApiKey(String apiKey) {
-    this._apiKey = apiKey;
+  StreamBuilder withApiKey(String apiKey) {
+    this.apiKey = apiKey;
+    return this;
   }
 
-  void withStreamer(Stream<List<num>> streamer) {
-    this._streamer = streamer;
+  StreamBuilder withStreamer(async.Stream<List<num>> streamer) {
+    this.streamer = streamer;
+    return this;
   }
 
-  void withMaxEventsHistorySize(int n) {
-    this._maxEventsHistorySize = n;
+  StreamBuilder withMaxEventsHistorySize(int n) {
+    this.maxEventsHistorySize = n;
+    return this;
   }
 
-  void withSamplingRate(int samplingRate) {
+  StreamBuilder withSamplingRate(int samplingRate) {
     if (samplingRate < MIN_RECOMMANDED_SAMPLING_RATE) {
       print("a sampling rate of at least 22050 is recommanded");
     }
-    this._samplingRate = samplingRate;
+    this.samplingRate = samplingRate;
+    return this;
   }
 
-  void withDataType(String dataType) {
+  StreamBuilder withDataType(String dataType) {
     if (!STREAM_FORMAT.containsKey(dataType)) {
       throw ArgumentError(dataType + " stream data type is not supported");
     }
-    this._dataType = dataType;
+    this.dataType = dataType;
+    return this;
   }
 
-  void withHost(String host) {
-    this._host = host;
+  StreamBuilder withHost(String host) {
+    this.host = host;
+    return this;
   }
 
-  stream build() {
-    final stream streamBuild = stream(_apiKey, _streamer, _samplingRate,
-        _dataType, _host, _maxEventsHistorySize);
-    return streamBuild;
+  StreamBuilder withSmartFiltering(bool smartFiltering) {
+    this.smartFiltering = smartFiltering;
+    return this;
+  }
+
+  Stream build() {
+    final metadata = Metadata()
+        .withApiKey(apiKey)
+        .withStreamFormat(dataType, samplingRate)
+        .withSmartFiltering(smartFiltering);
+    return Stream._(streamer, host, metadata, maxEventsHistorySize);
   }
 }

@@ -1,9 +1,8 @@
-final int MAX_DATA_SIZE = 1024 * 1024;
-const String HOST = "sense.cochlear.ai";
-final int PORT = 50050;
-final String API_VERSION = "v1.0";
-final String USER_AGENT = "dart-v1.0.0";
-final SERVER_CA_CERTIFICATE = """-----BEGIN CERTIFICATE-----
+const int MAX_DATA_SIZE = 1024 * 1024;
+const String HOST = "sense.cochlear.ai:50050";
+const String API_VERSION = "v1.1";
+const String USER_AGENT = "dart-v1.1.0";
+const SERVER_CA_CERTIFICATE = """-----BEGIN CERTIFICATE-----
 MIIFOTCCAyGgAwIBAgIUWoqB5PrB4YVtIXwfw7BR8HTxmUwwDQYJKoZIhvcNAQEL
 BQAwLDEUMBIGA1UEAwwLQ29jaGxlYXIuYWkxFDASBgNVBAoMC0NvY2hsZWFyLmFp
 MB4XDTIwMDQyMzA3MjYwNloXDTQwMDQxODA3MjYwNlowLDEUMBIGA1UEAwwLQ29j
@@ -33,3 +32,8 @@ NdqsnJD6iZqpfqAk8vsrwgGGLMc2xKNghOpVB21rioNGbCZEjQY9uMi/E8+ihapf
 NB/HwWres2mE8nkpvGeqmT18Arx9BjvEwX8pd6RO/zqgHXU7K2OG8qsJIhQIxQMc
 KJTIS9wRsSOECi0fx/BAwD2RQ0w1jQ7XrRbqdfdPIKHhp7K8v+ibFDb2YLhE
 -----END CERTIFICATE-----""";
+const String API_KEY_METADATA = "api_key";
+const String FORMAT_METADATA = "format";
+const String SMART_FILTERING_METADATA = "smart_filtering";
+const String API_VERSION_METADATA = "api_version";
+const String USER_AGENT_METADATA = "user_agent";

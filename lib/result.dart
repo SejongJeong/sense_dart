@@ -1,4 +1,6 @@
-import 'dart:convert';
+import 'dart:math';
+
+import './proto/SenseClient.pb.dart' as Grpc;
 
 class Event {
   var tag;
@@ -6,11 +8,11 @@ class Event {
   var startTime;
   var endTime;
 
-  Event(json) {
-    this.tag = json['tag'];
-    this.probability = json['probability'];
-    this.startTime = json['start_time'];
-    this.endTime = json['end_time'];
+  Event._(Grpc.Event raw) {
+    this.tag = raw.tag;
+    this.probability = raw.probability;
+    this.startTime = raw.startTime;
+    this.endTime = raw.endTime;
   }
 
   Event.fromJson(Map<String, dynamic> json)
@@ -37,29 +39,15 @@ bool defaultEventFilter(Event event) {
 }
 
 class Result {
-  var rawJson;
-  var result;
   var _service;
+  bool Function(Event) _filter;
+
   List<Event> _events;
 
-  Result(String raw) {
-    this.rawJson = json.decode(raw);
-    this.result = this.rawJson["result"];
-    this._service = this.result["task"];
-    this._events = List<Event>();
-    List<dynamic> tempEvent =
-        result["frames"] != null ? List.from(result["frames"]) : null;
-    for (var value in tempEvent) {
-      value = Event.fromJson(value);
-      this._events.add(value);
-    }
-  }
-
-  Result.empty() {
-    this.rawJson = null;
-    this.result = null;
-    this._service = null;
-    this._events = List<Event>();
+  Result(Grpc.CochlSense raw) {
+    this._service = raw.service;
+    this._filter = defaultEventFilter;
+    this._events = raw.events.map((e) => Event._(e)).toList();
   }
 
   Map<String, dynamic> toJson() => {
@@ -67,23 +55,13 @@ class Result {
         "service": service(),
       };
 
-
-
   String toString() {
     return _events.toString();
   }
 
-  bool filter(Event event) {
-    return useDefaultFilter(event);
-    // Implement Your Filter Code
-    /*if (event.tag == '') {
-      return true;
-    }
-    else return false;*/
-  }
-
-  bool useDefaultFilter(Event event) {
-    return defaultEventFilter(event);
+  Result withFilter(bool Function(Event) filter) {
+    this._filter = filter;
+    return this;
   }
 
   String service() {
@@ -96,7 +74,7 @@ class Result {
 
   List<Event> detectedEvents() {
     List<Event> tempList = allEvents();
-    tempList.retainWhere((element) => filter(element));
+    tempList.retainWhere((element) => _filter(element));
     return tempList;
   }
 
@@ -124,22 +102,12 @@ class Result {
     return summary;
   }
 
-  List<Event> appendNewResult(String raw, int maxStoredEvents) {
-    var newRawjson = json.decode(raw);
-    var newResult = newRawjson['result'];
-    this._service = newResult['task'];
-    List<Event> newEvent = List<Event>();
-    List<dynamic> tempEvent =
-        newResult["frames"] != null ? List.from(newResult["frames"]) : null;
-    for (var value in tempEvent) {
-      value = Event.fromJson(value);
-      newEvent.add(value);
-    }
-    if (maxStoredEvents < _events.length) {
-      this._events =
-          this._events.sublist(_events.length - maxStoredEvents, _events.length);
-    }
-    this._events += newEvent;
+  List<Event> appendNewResult(Grpc.CochlSense raw, int maxStoredEvents) {
+    List<Event> newEvents = raw.events.map((e) => Event._(e)).toList();
+
+    num indexFilter = max(0, this._events.length - maxStoredEvents);
+    this._events = this._events.sublist(indexFilter) + newEvents;
+
     return this._events;
   }
 

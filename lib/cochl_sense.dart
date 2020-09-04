@@ -1,4 +1,4 @@
-library sense_dart;
+library cochl_sense;
 
 export 'file.dart';
 export 'stream.dart';
